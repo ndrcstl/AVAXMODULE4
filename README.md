@@ -1,61 +1,64 @@
-# Degen Token Contract
-=========================
+**Degen Token Contract README**
 
-## Overview
------------
+This is a Solidity contract for a custom ERC20 token called Degen Token (DGN). It's built on top of OpenZeppelin's ERC20, Ownable, and ERC20Burnable contracts.
 
-The Degen Token contract is a decentralized application (dApp) built on the Ethereum blockchain. It allows for the creation, transfer, redemption, and burning of tokens.
+**Contract Overview**
 
-## Features
-------------
+The Degen Token contract allows users to mint, transfer, and burn tokens. It also has a unique feature that enables users to redeem tokens for in-game items.
 
-### 1. Minting new tokens
-### 2. Transferring tokens
-### 3. Redeeming tokens
-### 4. Checking token balance
-### 5. Burning tokens
+**Functions**
 
-## Contract Code
-----------------
+### 1. `mint(address to, uint256 amount)`
 
-```solidity
-pragma solidity ^0.8.9;
+Only the contract owner can call this function to mint a specified amount of DGN tokens to a given address.
 
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
+### 2. `decimals()`
 
-contract DegenToken is ERC20, Ownable, ERC20Burnable {
-    constructor() ERC20("Degen", "DGN") Ownable(msg.sender) {
-    }
+Overrides the default ERC20 `decimals()` function to return 0, indicating that the token has no decimal places.
 
-    function mint(address to, uint256 amount) public onlyOwner{
-        _mint(to, amount); 
-    }
+### 3. `getBalance()`
 
-    function decimals() override public pure returns (uint8){
-        return 0;
-    }
+Returns the balance of DGN tokens for the caller's address.
 
-    function getBalance() external view returns (uint256){
-        return this.balanceOf(msg.sender);
-    }
+### 4. `transferTokens(address _receiver, uint256 _value)`
 
-    function transferTokens(address _receiver, uint256 _value) external{
-        require(balanceOf(msg.sender)>= _value, "You do not have enough Degen Tokens");
-        _transfer(msg.sender, _receiver, _value);
-    }
+Allows users to transfer a specified amount of DGN tokens to another address.
 
-    function burnTokens(uint256 _value) external{
-        require(balanceOf(msg.sender)>= _value, "You do not have enough Degen Tokens");      
-        _burn(msg.sender, _value);
-    }
+### 5. `burnTokens(uint256 _value)`
 
-    function redeemTokens(uint256 _value) external{
-        require(balanceOf(msg.sender)>= _value, "You do not have enough Degen Tokens");
-        //redeem tokens: 1 token = 1 item
-        uint256 itemsReceived = _value;
-        console.log("You have redeemed %s tokens for %s items", _value, itemsReceived);
-        _burn(msg.sender, _value);
-    }
-}
+Allows users to burn a specified amount of DGN tokens from their own balance.
+
+### 6. `redeemTokens(ItemType _itemType)`
+
+This function enables users to redeem DGN tokens for in-game items. Here's how it works:
+
+* The user calls the `redeemTokens` function, specifying the type of item they want to redeem (e.g., TomeOfEXP, BagOfHealthPotions, etc.).
+* The contract checks if the user has enough DGN tokens to cover the item's price, which is stored in the `itemPrices` mapping.
+* If the user has sufficient tokens, the contract increments the user's inventory for the specified item type and burns the required amount of tokens from the user's balance.
+* The contract logs a message indicating the successful redemption, including the item name and the amount of tokens redeemed.
+
+**Redemption Process**
+
+The redemption process involves the following steps:
+
+1. The user calls `redeemTokens` with the desired item type.
+2. The contract checks the user's balance and the item's price.
+3. If the user has enough tokens, the contract updates the user's inventory and burns the required tokens.
+4. The contract logs a success message.
+
+**Item Types and Prices**
+
+The contract defines four item types, each with a corresponding price in DGN tokens:
+
+* TomeOfEXP: 50 DGN tokens
+* BagOfHealthPotions: 20 DGN tokens
+* BagOfManaPotions: 20 DGN tokens
+* ElixirOfInvulnerability: 100 DGN tokens
+
+**Inventory Management**
+
+The contract uses a mapping `inventory` to store the user's inventory for each item type. When a user redeems tokens for an item, the contract increments the corresponding inventory value.
+
+**Note**
+
+This contract is for demonstration purposes only and should not be used in production without thorough testing and security audits.
