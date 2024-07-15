@@ -4,7 +4,6 @@ pragma solidity ^0.8.9;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
-import "hardhat/console.sol";
 
 contract DegenToken is ERC20, Ownable, ERC20Burnable {
     enum ItemType { TomeOfEXP, BagOfHealthPotions, BagOfManaPotions, ElixirOfInvulnerability }
@@ -26,25 +25,29 @@ contract DegenToken is ERC20, Ownable, ERC20Burnable {
         return 0;
     }
 
-    function getBalance() external view returns (uint256){
+    function getBalance() public view returns (uint256){
         return this.balanceOf(msg.sender);
     }
 
-    function transferTokens(address _receiver, uint256 _value) external{
+    function transferTokens(address _receiver, uint256 _value) public{
         require(balanceOf(msg.sender)>= _value, "You do not have enough Degen Tokens");
         _transfer(msg.sender, _receiver, _value);
     }
 
-    function burnTokens(uint256 _value) external{
+    function burnTokens(uint256 _value) public{
         require(balanceOf(msg.sender)>= _value, "You do not have enough Degen Tokens");      
         _burn(msg.sender, _value);
     }
 
-    function redeemTokens(ItemType _itemType) external{
+    event RedeemedTokens(address indexed user, ItemType itemType, uint256 itemPrice);
+    event UpdatedInventory(address indexed user, ItemType itemType, uint256 newBalance);
+
+    function redeemTokens(ItemType _itemType) public {
         uint256 itemPrice = itemPrices[_itemType];
-        require(balanceOf(msg.sender)>= itemPrice, "You do not have enough Degen Tokens");
+        require(balanceOf(msg.sender) >= itemPrice, "You do not have enough Degen Tokens");
         inventory[msg.sender][_itemType]++;
-        console.log("You have redeemed %s tokens for 1 %s", itemPrice, getItemName(_itemType));
+        emit RedeemedTokens(msg.sender, _itemType, itemPrice);
+        emit UpdatedInventory(msg.sender, _itemType, inventory[msg.sender][_itemType]);
         _burn(msg.sender, itemPrice);
     }
 
